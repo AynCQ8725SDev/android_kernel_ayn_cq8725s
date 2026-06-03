@@ -23,7 +23,7 @@
 #include <linux/mmc/host.h>
 #include <linux/mmc/card.h>
 #include <linux/mmc/slot-gpio.h>
-
+#include <mydebug.h>
 #include "core.h"
 #include "crypto.h"
 #include "host.h"
@@ -276,7 +276,7 @@ EXPORT_SYMBOL(mmc_of_parse_clk_phase);
 int mmc_of_parse(struct mmc_host *host)
 {
 	struct device *dev = host->parent;
-	u32 bus_width, drv_type, cd_debounce_delay_ms;
+	u32 bus_width, drv_type;
 	int ret;
 
 	if (!dev || !dev_fwnode(dev))
@@ -328,14 +328,15 @@ int mmc_of_parse(struct mmc_host *host)
 			host->caps2 |= MMC_CAP2_CD_ACTIVE_HIGH;
 
 		if (device_property_read_u32(dev, "cd-debounce-delay-ms",
-					     &cd_debounce_delay_ms))
-			cd_debounce_delay_ms = 200;
+					     &host->cd_debounce_delay_ms))
+			host->cd_debounce_delay_ms = 200;
+		KERNEL_INFO("cd_debounce_delay_ms=%u!\n", host->cd_debounce_delay_ms);
 
 		if (device_property_read_bool(dev, "broken-cd"))
 			host->caps |= MMC_CAP_NEEDS_POLL;
 
 		ret = mmc_gpiod_request_cd(host, "cd", 0, false,
-					   cd_debounce_delay_ms * 1000);
+					   host->cd_debounce_delay_ms * 1000);
 		if (!ret)
 			dev_info(host->parent, "Got CD GPIO\n");
 		else if (ret != -ENOENT && ret != -ENOSYS)

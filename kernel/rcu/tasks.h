@@ -224,6 +224,7 @@ static void set_tasks_gp_state(struct rcu_tasks *rtp, int newstate)
 
 #ifndef CONFIG_TINY_RCU
 /* Return state name. */
+#if PRINTK_INFO_EN
 static const char *tasks_gp_state_getname(struct rcu_tasks *rtp)
 {
 	int i = data_race(rtp->gp_state); // Let KCSAN detect update races
@@ -233,6 +234,7 @@ static const char *tasks_gp_state_getname(struct rcu_tasks *rtp)
 		return "???";
 	return rcu_tasks_gp_state_names[j];
 }
+#endif
 #endif /* #ifndef CONFIG_TINY_RCU */
 
 // Initialize per-CPU callback lists for the specified flavor of

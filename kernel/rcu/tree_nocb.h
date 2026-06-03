@@ -1596,6 +1596,7 @@ void rcu_bind_current_to_nocb(void)
 }
 EXPORT_SYMBOL_GPL(rcu_bind_current_to_nocb);
 
+#if PRINTK_INFO_EN
 // The ->on_cpu field is available only in CONFIG_SMP=y, so...
 #ifdef CONFIG_SMP
 static char *show_rcu_should_be_on_cpu(struct task_struct *tsp)
@@ -1635,25 +1636,27 @@ static void show_rcu_nocb_gp_state(struct rcu_data *rdp)
 		rdp->nocb_gp_kthread ? (int)task_cpu(rdp->nocb_gp_kthread) : -1,
 		show_rcu_should_be_on_cpu(rdp->nocb_gp_kthread));
 }
-
+#endif
 /* Dump out nocb kthread state for the specified rcu_data structure. */
 static void show_rcu_nocb_state(struct rcu_data *rdp)
 {
+#if PRINTK_INFO_EN
 	char bufw[20];
 	char bufr[20];
+#endif
 	struct rcu_data *nocb_next_rdp;
-	struct rcu_segcblist *rsclp = &rdp->cblist;
 	bool waslocked;
 	bool wassleep;
-
+#if PRINTK_INFO_EN
+	struct rcu_segcblist *rsclp = &rdp->cblist;
 	if (rdp->nocb_gp_rdp == rdp)
 		show_rcu_nocb_gp_state(rdp);
-
+#endif
 	nocb_next_rdp = list_next_or_null_rcu(&rdp->nocb_gp_rdp->nocb_head_rdp,
 					      &rdp->nocb_entry_rdp,
 					      typeof(*rdp),
 					      nocb_entry_rdp);
-
+#if PRINTK_INFO_EN
 	sprintf(bufw, "%ld", rsclp->gp_seq[RCU_WAIT_TAIL]);
 	sprintf(bufr, "%ld", rsclp->gp_seq[RCU_NEXT_READY_TAIL]);
 	pr_info("   CB %d^%d->%d %c%c%c%c%c F%ld L%ld C%d %c%c%s%c%s%c%c q%ld %c CPU %d%s\n",
@@ -1678,7 +1681,7 @@ static void show_rcu_nocb_state(struct rcu_data *rdp)
 		rdp->nocb_cb_kthread ? task_state_to_char(rdp->nocb_cb_kthread) : '.',
 		rdp->nocb_cb_kthread ? (int)task_cpu(rdp->nocb_cb_kthread) : -1,
 		show_rcu_should_be_on_cpu(rdp->nocb_cb_kthread));
-
+#endif
 	/* It is OK for GP kthreads to have GP state. */
 	if (rdp->nocb_gp_rdp == rdp)
 		return;

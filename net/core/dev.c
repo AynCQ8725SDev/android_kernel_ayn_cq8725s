@@ -11537,9 +11537,15 @@ define_netdev_printk_level(netdev_alert, KERN_ALERT);
 define_netdev_printk_level(netdev_crit, KERN_CRIT);
 define_netdev_printk_level(netdev_err, KERN_ERR);
 define_netdev_printk_level(netdev_warn, KERN_WARNING);
+#if PRINTK_INFO_EN
 define_netdev_printk_level(netdev_notice, KERN_NOTICE);
 define_netdev_printk_level(netdev_info, KERN_INFO);
-
+#else
+void netdev_notice(const struct net_device *dev, const char *fmt, ...){}
+EXPORT_SYMBOL(netdev_notice);
+void netdev_info(const struct net_device *dev, const char *fmt, ...){}
+EXPORT_SYMBOL(netdev_info);
+#endif
 static void __net_exit netdev_exit(struct net *net)
 {
 	kfree(net->dev_name_head);

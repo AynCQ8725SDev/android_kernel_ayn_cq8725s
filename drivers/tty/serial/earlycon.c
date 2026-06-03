@@ -70,7 +70,7 @@ static void __init earlycon_init(struct earlycon_device *device,
 	strscpy(earlycon->name, name, min(len + 1, sizeof(earlycon->name)));
 	earlycon->data = &early_console_dev;
 }
-
+#if PRINTK_INFO_EN
 static void __init earlycon_print_info(struct earlycon_device *device)
 {
 	struct console *earlycon = device->con;
@@ -89,7 +89,7 @@ static void __init earlycon_print_info(struct earlycon_device *device)
 			earlycon->name, earlycon->index,
 			port->iobase, device->options);
 }
-
+#endif
 static int __init parse_options(struct earlycon_device *device, char *options)
 {
 	struct uart_port *port = &device->port;
@@ -152,7 +152,9 @@ static int __init register_earlycon(char *buf, const struct earlycon_id *match)
 
 	earlycon_init(&early_console_dev, match->name);
 	err = match->setup(&early_console_dev, buf);
+#if PRINTK_INFO_EN
 	earlycon_print_info(&early_console_dev);
+#endif
 	if (err < 0)
 		return err;
 	if (!early_console_dev.con->write)
@@ -316,7 +318,9 @@ int __init of_setup_earlycon(const struct earlycon_id *match,
 	}
 	earlycon_init(&early_console_dev, match->name);
 	err = match->setup(&early_console_dev, options);
+#if PRINTK_INFO_EN
 	earlycon_print_info(&early_console_dev);
+#endif
 	if (err < 0)
 		return err;
 	if (!early_console_dev.con->write)

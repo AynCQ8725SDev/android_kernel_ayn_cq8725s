@@ -1002,16 +1002,47 @@ static noinline void avc_compute_av(u32 ssid, u32 tsid, u16 tclass,
 	security_compute_av(ssid, tsid, tclass, avd, &xp_node->xp);
 	avc_insert(ssid, tsid, tclass, avd, xp_node);
 }
-
+extern int selinux_enforce_start;
 static noinline int avc_denied(u32 ssid, u32 tsid,
 			       u16 tclass, u32 requested,
 			       u8 driver, u8 xperm, unsigned int flags,
 			       struct av_decision *avd)
 {
+	u32 scontext_len;
+	u32 tcontext_len;
+	u32 enable = enforcing_enabled();
+	char *scontext = NULL;
+	char *tcontext = NULL;
 	if (flags & AVC_STRICT)
 		return -EACCES;
+	if (security_sid_to_context(ssid, &scontext, &scontext_len)){
 
-	if (enforcing_enabled() &&
+	} else {
+		if(selinux_enforce_start) {
+			if(strstr(scontext, "untrusted_app") != NULL) {
+				if (security_sid_to_context(tsid, &tcontext, &tcontext_len)){
+					if(!(avd->flags & AVD_FLAGS_PERMISSIVE)){
+						//printk(KERN_EMERG   "%s  scontext1:%s   %d\n",__func__, scontext,avd->flags);
+						kfree(scontext);
+						return -EACCES;
+					}
+				} else {
+					if(strstr(tcontext, "pservice") == NULL) {
+						if(!(avd->flags & AVD_FLAGS_PERMISSIVE)){
+							//printk(KERN_EMERG   "%s  scontext:%s tcontext:%s   %d\n",__func__, scontext, tcontext,avd->flags);
+							kfree(scontext);
+							kfree(tcontext);
+							return -EACCES;
+						}
+					}
+				}
+			}
+			enable = 0;
+		}
+		kfree(tcontext);
+		kfree(scontext);
+	}
+	if (enable &&
 	    !(avd->flags & AVD_FLAGS_PERMISSIVE))
 		return -EACCES;
 

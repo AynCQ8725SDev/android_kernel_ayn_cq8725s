@@ -383,7 +383,9 @@ device_initcall(cpuinfo_regs_init);
 
 static void cpuinfo_detect_icache_policy(struct cpuinfo_arm64 *info)
 {
+#if PRINTK_INFO_EN
 	unsigned int cpu = smp_processor_id();
+#endif
 	u32 l1ip = CTR_L1IP(info->reg_ctr);
 
 	switch (l1ip) {

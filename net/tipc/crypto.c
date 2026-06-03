@@ -297,9 +297,11 @@ static void tipc_crypto_rcv_complete(struct net *net, struct tipc_aead *aead,
 				     struct tipc_bearer *b,
 				     struct sk_buff **skb, int err);
 static void tipc_crypto_do_cmd(struct net *net, int cmd);
+#if PRINTK_INFO_EN
 static char *tipc_crypto_key_dump(struct tipc_crypto *c, char *buf);
 static char *tipc_key_change_dump(struct tipc_key old, struct tipc_key new,
 				  char *buf);
+#endif
 static int tipc_crypto_key_xmit(struct net *net, struct tipc_aead_key *skey,
 				u16 gen, u8 mode, u32 dnode);
 static bool tipc_crypto_key_rcv(struct tipc_crypto *rx, struct tipc_msg *hdr);
@@ -1092,16 +1094,18 @@ static inline void tipc_crypto_key_set_state(struct tipc_crypto *c,
 					     u8 new_active,
 					     u8 new_pending)
 {
+#if PRINTK_INFO_EN
 	struct tipc_key old = c->key;
 	char buf[32];
-
+#endif
 	c->key.keys = ((new_passive & KEY_MASK) << (KEY_BITS * 2)) |
 		      ((new_active  & KEY_MASK) << (KEY_BITS)) |
 		      ((new_pending & KEY_MASK));
-
+#if PRINTK_INFO_EN
 	pr_debug("%s: key changing %s ::%pS\n", c->name,
 		 tipc_key_change_dump(old, c->key, buf),
 		 __builtin_return_address(0));
+#endif
 }
 
 /**
@@ -2067,7 +2071,7 @@ print_stats:
 
 	pr_info("\n======================== Done ========================\n");
 }
-
+#if PRINTK_INFO_EN
 static char *tipc_crypto_key_dump(struct tipc_crypto *c, char *buf)
 {
 	struct tipc_key key = c->key;
@@ -2146,7 +2150,7 @@ again:
 	i += scnprintf(buf + i, 32 - i, "]");
 	return buf;
 }
-
+#endif
 /**
  * tipc_crypto_msg_rcv - Common 'MSG_CRYPTO' processing point
  * @net: the struct net

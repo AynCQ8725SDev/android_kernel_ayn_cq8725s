@@ -857,12 +857,14 @@ have_ifp:
 		if (ifp->flags & (IFA_F_TENTATIVE|IFA_F_OPTIMISTIC)) {
 			if (dad) {
 				if (nonce != 0 && ifp->dad_nonce == nonce) {
+#if PRINTK_INFO_EN
 					u8 *np = (u8 *)&nonce;
 					/* Matching nonce if looped back */
 					ND_PRINTK(2, notice,
 						  "%s: IPv6 DAD loopback for address %pI6c nonce %pM ignored\n",
 						  ifp->idev->dev->name,
 						  &ifp->addr, np);
+#endif
 					goto out;
 				}
 				/*

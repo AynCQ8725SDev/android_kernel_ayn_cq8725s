@@ -25,7 +25,9 @@
 static int probe_current_pmu(struct arm_pmu *pmu,
 			     const struct pmu_probe_info *info)
 {
+#if PRINTK_INFO_EN
 	int cpu = get_cpu();
+#endif
 	unsigned int cpuid = read_cpuid_id();
 	int ret = -ENODEV;
 

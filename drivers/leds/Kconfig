@@ -287,6 +287,9 @@ config LEDS_NET48XX
 	  This option enables support for the Soekris net4801 and net4826 error
 	  LED.
 
+config PWM_PM
+       tristate "Support for PWM_PM"
+
 config LEDS_QPNP_FLASH_V2
 	tristate "Support for QPNP V2 Flash LEDs"
 	depends on LEDS_CLASS && MFD_SPMI_PMIC

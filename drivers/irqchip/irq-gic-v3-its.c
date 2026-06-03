@@ -5091,8 +5091,9 @@ static int __init its_probe_one(struct its_node *its)
 		}
 
 		if (is_v4_1(its)) {
+#if PRINTK_INFO_EN
 			u32 svpet = FIELD_GET(GITS_TYPER_SVPET, its->typer);
-
+#endif
 			its->sgir_base = ioremap(its->phys_base + SZ_128K, SZ_64K);
 			if (!its->sgir_base) {
 				err = -ENOMEM;

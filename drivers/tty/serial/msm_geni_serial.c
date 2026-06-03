@@ -32,6 +32,8 @@
 #include <linux/suspend.h>
 #include <linux/tty.h>
 #include <linux/tty_flip.h>
+#include <mydebug.h>
+#include "check_mcu_data.c"
 #include <uapi/linux/msm_geni_serial.h>
 
 static bool con_enabled = IS_ENABLED(CONFIG_SERIAL_MSM_GENI_CONSOLE_DEFAULT_ENABLED);
@@ -199,7 +201,10 @@ static bool con_enabled = IS_ENABLED(CONFIG_SERIAL_MSM_GENI_CONSOLE_DEFAULT_ENAB
  */
 #define POLL_ITERATIONS		1000
 
-#define IPC_LOG_MSG(ctx, x...) ipc_log_string(ctx, x)
+#define IPC_LOG_MSG(ctx, x...) do { \
+	if (ctx) \
+		ipc_log_string(ctx, x); \
+} while (0)
 
 #define DMA_RX_BUF_SIZE		(2048)
 #define UART_CONSOLE_RX_WM	(2)
@@ -2951,6 +2956,10 @@ static void msm_geni_serial_stop_rx(struct uart_port *uport)
 			     __func__, ret);
 }
 
+static int checkmcuEn = 0;
+extern void copyMcuData(char *buf, int length);
+extern void checkMcuInit(void);
+extern void checkMcuRemove(void);
 static int handle_rx_hs(struct uart_port *uport, unsigned int rx_fifo_wc,
 			unsigned int rx_last_byte_valid, unsigned int rx_last, bool drop_rx)
 {
@@ -2977,6 +2986,9 @@ static int handle_rx_hs(struct uart_port *uport, unsigned int rx_fifo_wc,
 
 	uport->icount.rx += ret;
 	tty_flip_buffer_push(tport);
+	if(checkmcuEn == 1 && uport->line == 1){
+		copyMcuData((char *)port->rx_fifo, rx_bytes);
+	}
 	dump_ipc(uport, port->ipc_log_rx, "Rx", (char *)port->rx_fifo, 0, rx_bytes);
 	return ret;
 }
@@ -3090,6 +3102,50 @@ exit_handle_tx:
 		uart_write_wakeup(uport);
 	return 0;
 }
+
+extern int headFrontErr;
+extern int headErr;
+extern int checksumErr;
+extern int dataLenErr;
+static ssize_t checkmcu_show(struct device *dev, struct device_attribute *attr, char *ubuf)
+{
+	ssize_t size = sprintf(ubuf, "%d", checkmcuEn);
+	KERNEL_ERROR("cmd_read: checkmcuEn=%d, headFrontErr=%d, headErr=%d, checksumErr=%d, dataLenErr=%d", checkmcuEn, headFrontErr, headErr, checksumErr, dataLenErr);
+	return size;
+}
+
+static void msm_geni_serial_debug_init(struct uart_port *uport, bool console);
+static ssize_t checkmcu_store(struct device *dev, struct device_attribute *attr, const char *ubuf, size_t size)
+{
+	struct uart_port *uport;
+	struct msm_geni_serial_port *port = get_port_from_line(1, false);
+	if (IS_ERR_OR_NULL(port))
+		return size;
+	uport = &port->uport;
+	KERNEL_ERROR("cmd_write:%s", ubuf);
+	if(!strncmp(ubuf, "checkmcu ", 9) && size > 9){
+		if(ubuf[9] == '1'){
+			checkMcuInit();
+			checkmcuEn = 1;
+			if (IS_ERR_OR_NULL(port->dbg))
+				msm_geni_serial_debug_init(uport, 0);
+		} else {
+			checkmcuEn = 0;
+			checkMcuRemove();
+			if (!IS_ERR_OR_NULL(port->dbg)){
+				port->dbg = NULL;
+				debugfs_remove(port->dbg);
+			}
+		}
+
+	} else {
+		KERNEL_ERROR(KERN_ERR "muxcmd error for cmd %s", ubuf);
+	}
+
+	return size;
+}
+
+static DEVICE_ATTR_RW(checkmcu);
 
 /*
  * msm_geni_find_wakeup_byte() - Checks if wakeup byte is present
@@ -3235,6 +3291,9 @@ static int msm_geni_serial_handle_dma_rx(struct uart_port *uport, bool drop_rx)
 
 	uport->icount.rx += rx_bytes_copied;
 	tty_flip_buffer_push(tport);
+	if(checkmcuEn == 1 && uport->line == 1){
+		copyMcuData((char *)port->rx_buf, rx_bytes_copied);
+	}
 	dump_ipc(uport, port->ipc_log_rx, "DMA Rx", (char *)port->rx_buf, 0, rx_bytes_copied);
 	/*
 	 * DMA_DONE interrupt doesn't confirm that the DATA is copied to
@@ -5120,7 +5179,7 @@ msm_geni_serial_port_init(struct platform_device *pdev, struct msm_geni_serial_p
 	device_create_file(uport->dev, &dev_attr_hs_uart_operation);
 	device_create_file(uport->dev, &dev_attr_hs_uart_version);
 	device_create_file(uport->dev, &dev_attr_capture_kpi);
-
+	device_create_file(uport->dev, &dev_attr_checkmcu);
 	return ret;
 }
 
@@ -5216,7 +5275,7 @@ static int msm_geni_serial_probe(struct platform_device *pdev)
 	if (ret)
 		goto exit_geni_serial_probe;
 
-	msm_geni_serial_debug_init(uport, is_console);
+	//msm_geni_serial_debug_init(uport, is_console);
 	ret = msm_geni_serial_port_init(pdev, port);
 	if (ret)
 		goto exit_geni_serial_probe;
@@ -5308,6 +5367,12 @@ static int msm_geni_serial_remove(struct platform_device *pdev)
 	device_remove_file(port->uport.dev, &dev_attr_xfer_mode);
 	device_remove_file(port->uport.dev, &dev_attr_ver_info);
 	device_remove_file(port->uport.dev, &dev_attr_capture_kpi);
+	device_remove_file(port->uport.dev, &dev_attr_checkmcu);
+
+	if(checkmcuEn == 1){
+		checkMcuRemove();
+	}
+	//if (!IS_ERR_OR_NULL(port->dbg))
 	debugfs_remove(port->dbg);
 
 	dev_info(&pdev->dev, "%s driver removed %d\n", __func__, true);

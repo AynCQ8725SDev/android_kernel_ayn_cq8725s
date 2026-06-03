@@ -3575,8 +3575,9 @@ static const u8 sysrq_toggle_seq[] = CONFIG_MAGIC_SYSRQ_SERIAL_SEQUENCE;
 
 static void uart_sysrq_on(struct work_struct *w)
 {
+#if PRINTK_INFO_EN
 	int sysrq_toggle_seq_len = strlen(sysrq_toggle_seq);
-
+#endif
 	sysrq_toggle_support(1);
 	pr_info("SysRq is enabled by magic sequence '%*pE' on serial\n",
 		sysrq_toggle_seq_len, sysrq_toggle_seq);

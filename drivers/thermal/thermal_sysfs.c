@@ -38,6 +38,14 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
 	struct thermal_zone_device *tz = to_thermal_zone(dev);
 	int temperature, ret;
 
+	//printk(KERN_EMERG  "temp_show -1 id:%d!\n",tz->id);
+
+	if(tz->id == 7){
+		tz = thermal_zone_get_by_id(23);//cpu
+	} else if(tz->id == 10){
+		tz = thermal_zone_get_by_id(44);//gpu
+	}
+	
 	ret = thermal_zone_get_temp(tz, &temperature);
 
 	if (ret)

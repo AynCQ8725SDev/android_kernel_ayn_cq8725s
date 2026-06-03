@@ -196,6 +196,12 @@ static const struct __extcon_info {
 		.name = "MECHANICAL",
 	},
 
+	[EXTCON_DEMO_A] = {
+		.type = EXTCON_TYPE_MISC,
+		.id = EXTCON_DEMO_A,
+		.name = "EXTCON_DEMO_AENG",
+	},
+
 	{ /* sentinel */ }
 };
 

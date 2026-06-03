@@ -412,7 +412,7 @@ int xt_find_revision(u8 af, const char *name, u8 revision, int target,
 	return 1;
 }
 EXPORT_SYMBOL_GPL(xt_find_revision);
-
+#if PRINTK_INFO_EN
 static char *
 textify_hooks(char *buf, size_t size, unsigned int mask, uint8_t nfproto)
 {
@@ -446,7 +446,7 @@ textify_hooks(char *buf, size_t size, unsigned int mask, uint8_t nfproto)
 
 	return buf;
 }
-
+#endif
 /**
  * xt_check_proc_name - check that name is suitable for /proc file creation
  *
@@ -502,6 +502,7 @@ int xt_check_match(struct xt_mtchk_param *par,
 		return -EINVAL;
 	}
 	if (par->match->hooks && (par->hook_mask & ~par->match->hooks) != 0) {
+#if PRINTK_INFO_EN
 		char used[64], allow[64];
 
 		pr_info_ratelimited("%s_tables: %s match: used from hooks %s, but only valid from %s\n",
@@ -511,6 +512,7 @@ int xt_check_match(struct xt_mtchk_param *par,
 				    textify_hooks(allow, sizeof(allow),
 						  par->match->hooks,
 						  par->family));
+#endif
 		return -EINVAL;
 	}
 	if (par->match->proto && (par->match->proto != proto || inv_proto)) {
@@ -1017,6 +1019,7 @@ int xt_check_target(struct xt_tgchk_param *par,
 		return -EINVAL;
 	}
 	if (par->target->hooks && (par->hook_mask & ~par->target->hooks) != 0) {
+#if PRINTK_INFO_EN
 		char used[64], allow[64];
 
 		pr_info_ratelimited("%s_tables: %s target: used from hooks %s, but only usable from %s\n",
@@ -1026,6 +1029,7 @@ int xt_check_target(struct xt_tgchk_param *par,
 				    textify_hooks(allow, sizeof(allow),
 						  par->target->hooks,
 						  par->family));
+#endif
 		return -EINVAL;
 	}
 	if (par->target->proto && (par->target->proto != proto || inv_proto)) {

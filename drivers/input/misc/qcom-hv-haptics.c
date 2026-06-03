@@ -6162,12 +6162,44 @@ static ssize_t i_gain_error_show(const struct class *c,
 }
 static const CLASS_ATTR_RO(i_gain_error);
 
+static ssize_t user_vmax_mv_show(const struct class *c,
+		const struct class_attribute *attr, char *buf)
+{
+	struct haptics_chip *chip = container_of(c,
+			struct haptics_chip, hap_class);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", chip->config.vmax_mv);
+}
+
+static ssize_t user_vmax_mv_store(const struct class *c,
+		const struct class_attribute *attr, const char *buf, size_t count)
+{
+	struct haptics_chip *chip = container_of(c,
+			struct haptics_chip, hap_class);
+	unsigned int vmax_mv;
+	int rc;
+
+	rc = kstrtouint(buf, 10, &vmax_mv);
+	if (rc < 0)
+		return rc;
+
+	if (vmax_mv > chip->max_vmax_mv)
+		vmax_mv = chip->max_vmax_mv;
+
+	chip->config.vmax_mv = vmax_mv;
+
+	return count;
+}
+
+static CLASS_ATTR_RW(user_vmax_mv);
+
 static struct attribute *hap_class_attrs[] = {
 	&class_attr_lra_calibration.attr,
 	&class_attr_lra_frequency_hz.attr,
 	&class_attr_lra_impedance.attr,
 	&class_attr_primitive_duration.attr,
 	&class_attr_visense_enabled.attr,
+	&class_attr_user_vmax_mv.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(hap_class);

@@ -129,8 +129,9 @@ int vlan_check_real_dev(struct net_device *real_dev,
 			__be16 protocol, u16 vlan_id,
 			struct netlink_ext_ack *extack)
 {
+#if PRINTK_INFO_EN
 	const char *name = real_dev->name;
-
+#endif
 	if (real_dev->features & NETIF_F_VLAN_CHALLENGED ||
 	    real_dev->type != ARPHRD_ETHER) {
 		pr_info("VLANs not supported on %s\n", name);

@@ -269,7 +269,9 @@ static void tipc_link_build_proto_msg(struct tipc_link *l, int mtyp, bool probe,
 				      bool probe_reply, u16 rcvgap,
 				      int tolerance, int priority,
 				      struct sk_buff_head *xmitq);
+#if PRINTK_INFO_EN
 static void link_print(struct tipc_link *l, const char *str);
+#endif
 static int tipc_link_build_nack_msg(struct tipc_link *l,
 				    struct sk_buff_head *xmitq);
 static void tipc_link_build_bc_init_msg(struct tipc_link *l,
@@ -1235,9 +1237,10 @@ static bool link_retransmit_failure(struct tipc_link *l, struct tipc_link *r,
 	hdr = buf_msg(skb);
 	if (link_is_bc_sndlink(l) && !less(r->acked, msg_seqno(hdr)))
 		return false;
-
+#if PRINTK_INFO_EN
 	pr_warn("Retransmission failure on link <%s>\n", l->name);
 	link_print(l, "State of link ");
+#endif
 	pr_info("Failed msg: usr %u, typ %u, len %u, err %u\n",
 		msg_user(hdr), msg_type(hdr), msg_size(hdr), msg_errcode(hdr));
 	pr_info("sqno %u, prev: %x, dest: %x\n",
@@ -2572,7 +2575,7 @@ void tipc_link_reset_stats(struct tipc_link *l)
 {
 	memset(&l->stats, 0, sizeof(l->stats));
 }
-
+#if PRINTK_INFO_EN
 static void link_print(struct tipc_link *l, const char *str)
 {
 	struct sk_buff *hskb = skb_peek(&l->transmq);
@@ -2584,7 +2587,7 @@ static void link_print(struct tipc_link *l, const char *str)
 		skb_queue_len(&l->transmq), head, tail,
 		skb_queue_len(&l->backlogq), l->snd_nxt, l->rcv_nxt);
 }
-
+#endif
 /* Parse and validate nested (link) properties valid for media, bearer and link
  */
 int tipc_nl_parse_link_prop(struct nlattr *prop, struct nlattr *props[])

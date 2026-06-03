@@ -117,3 +117,4 @@ obj-y					+= blink/
 
 # Simple LED drivers
 obj-y					+= simple/
+obj-$(CONFIG_PWM_PM)    += gpio5_pwm.o

@@ -190,7 +190,7 @@ module_param(debug, int, 0644);
 
 static void __vb2_queue_cancel(struct vb2_queue *q);
 static void __enqueue_in_driver(struct vb2_buffer *vb);
-
+#if PRINTK_INFO_EN
 static const char *vb2_state_name(enum vb2_buffer_state s)
 {
 	static const char * const state_names[] = {
@@ -207,7 +207,7 @@ static const char *vb2_state_name(enum vb2_buffer_state s)
 		return state_names[s];
 	return "unknown";
 }
-
+#endif
 /*
  * __vb2_buf_mem_alloc() - allocate video memory for the given buffer
  */

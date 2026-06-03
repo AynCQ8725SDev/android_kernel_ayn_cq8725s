@@ -178,7 +178,9 @@ static int ddebug_change(const struct ddebug_query *query,
 	struct ddebug_table *dt;
 	unsigned int newflags;
 	unsigned int nfound = 0;
+#if PRINTK_INFO_EN
 	struct flagsbuf fbuf, nbuf;
+#endif
 	struct ddebug_class_map *map = NULL;
 	int __outvar valid_class;
 

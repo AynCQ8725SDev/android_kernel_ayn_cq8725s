@@ -90,12 +90,14 @@ static int set_memmap_mode(const char *val, const struct kernel_param *kp)
 			mode = MEMMAP_ON_MEMORY_DISABLE;
 	}
 	*((int *)kp->arg) = mode;
+#if PRINTK_INFO_EN
 	if (mode == MEMMAP_ON_MEMORY_FORCE) {
 		unsigned long memmap_pages = memory_block_memmap_on_memory_pages();
 
 		pr_info_once("Memory hotplug will waste %ld pages in each memory block\n",
 			     memmap_pages - PFN_UP(memory_block_memmap_size()));
 	}
+#endif
 	return 0;
 }
 

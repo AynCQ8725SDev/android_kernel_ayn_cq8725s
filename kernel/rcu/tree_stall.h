@@ -433,7 +433,7 @@ static bool rcu_is_rcuc_kthread_starving(struct rcu_data *rdp, unsigned long *jp
 		*jp = j;
 	return j > 2 * HZ;
 }
-
+#if PRINTK_INFO_EN
 static void print_cpu_stat_info(int cpu)
 {
 	struct rcu_snap_record rsr, *rsrp;
@@ -462,7 +462,7 @@ static void print_cpu_stat_info(int cpu)
 		div_u64(rsr.cputime_system - rsrp->cputime_system, NSEC_PER_MSEC),
 		jiffies_to_msecs(jiffies - rsrp->jiffies));
 }
-
+#endif
 /*
  * Print out diagnostic information for the specified stalled CPU.
  *
@@ -520,8 +520,9 @@ static void print_cpu_stall_info(int cpu)
 	       data_race(rcu_state.n_force_qs) - rcu_state.n_force_qs_gpstart,
 	       rcuc_starved ? buf : "",
 	       falsepositive ? " (false positive?)" : "");
-
+#if PRINTK_INFO_EN
 	print_cpu_stat_info(cpu);
+#endif
 }
 
 /* Complain about starvation of grace-period kthread.  */
@@ -626,7 +627,7 @@ static void print_other_cpu_stall(unsigned long gp_seq, unsigned long gps)
 
 	for_each_possible_cpu(cpu)
 		totqlen += rcu_get_n_cbs_cpu(cpu);
-	pr_err("\t(detected by %d, t=%ld jiffies, g=%ld, q=%lu ncpus=%d)\n",
+	pr_cont("\t(detected by %d, t=%ld jiffies, g=%ld, q=%lu ncpus=%d)\n",
 	       smp_processor_id(), (long)(jiffies - gps),
 	       (long)rcu_seq_current(&rcu_state.gp_seq), totqlen, rcu_state.n_online_cpus);
 	if (ndetected) {
@@ -687,7 +688,7 @@ static void print_cpu_stall(unsigned long gps)
 	raw_spin_unlock_irqrestore_rcu_node(rdp->mynode, flags);
 	for_each_possible_cpu(cpu)
 		totqlen += rcu_get_n_cbs_cpu(cpu);
-	pr_err("\t(t=%lu jiffies g=%ld q=%lu ncpus=%d)\n",
+	pr_cont("\t(t=%lu jiffies g=%ld q=%lu ncpus=%d)\n",
 		jiffies - gps,
 		(long)rcu_seq_current(&rcu_state.gp_seq), totqlen, rcu_state.n_online_cpus);
 
@@ -893,8 +894,9 @@ void show_rcu_gp_kthreads(void)
 	unsigned long jw;
 	struct rcu_data *rdp;
 	struct rcu_node *rnp;
+#if PRINTK_INFO_EN
 	struct task_struct *t = READ_ONCE(rcu_state.gp_kthread);
-
+#endif
 	j = jiffies;
 	ja = j - data_race(READ_ONCE(rcu_state.gp_activity));
 	jr = j - data_race(READ_ONCE(rcu_state.gp_req_activity));

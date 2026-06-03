@@ -352,6 +352,7 @@ void __init fdt_init_reserved_mem(void)
 					memblock_phys_free(rmem->base,
 							   rmem->size);
 			} else {
+#if PRINTK_INFO_EN
 				phys_addr_t end = rmem->base + rmem->size - 1;
 
 				pr_info("%pa..%pa (%lu KiB) %s %s %s\n",
@@ -359,7 +360,7 @@ void __init fdt_init_reserved_mem(void)
 					nomap ? "nomap" : "map",
 					reusable ? "reusable" : "non-reusable",
 					rmem->name ? rmem->name : "unknown");
-
+#endif
 				memblock_memsize_record(rmem->name, rmem->base,
 							rmem->size, nomap,
 							reusable);

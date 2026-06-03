@@ -199,7 +199,9 @@ static void init_gic_priority_masking(void)
  */
 asmlinkage notrace void secondary_start_kernel(void)
 {
+#if PRINTK_INFO_EN
 	u64 mpidr = read_cpuid_mpidr() & MPIDR_HWID_BITMASK;
+#endif
 	struct mm_struct *mm = &init_mm;
 	const struct cpu_operations *ops;
 	unsigned int cpu = smp_processor_id();

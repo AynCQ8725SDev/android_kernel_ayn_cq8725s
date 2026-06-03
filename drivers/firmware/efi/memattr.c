@@ -162,8 +162,9 @@ int __init efi_memattr_apply_permissions(struct mm_struct *mm,
 		efi_memory_desc_t md;
 		unsigned long size;
 		bool valid;
+#if PRINTK_INFO_EN
 		char buf[64];
-
+#endif
 		valid = entry_is_valid((void *)tbl->entry + i * tbl->desc_size,
 				       &md);
 		size = md.num_pages << EFI_PAGE_SHIFT;

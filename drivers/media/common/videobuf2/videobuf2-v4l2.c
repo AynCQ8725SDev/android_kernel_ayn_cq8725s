@@ -367,7 +367,9 @@ static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct media_device *md
 				    struct v4l2_buffer *b, bool is_prepare,
 				    struct media_request **p_req)
 {
+#if PRINTK_INFO_EN
 	const char *opname = is_prepare ? "prepare_buf" : "qbuf";
+#endif
 	struct media_request *req;
 	struct vb2_v4l2_buffer *vbuf;
 	struct vb2_buffer *vb;

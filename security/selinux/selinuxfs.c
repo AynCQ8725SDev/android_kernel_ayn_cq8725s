@@ -65,6 +65,7 @@ enum sel_inos {
 	SEL_STATUS,	/* export current status using mmap() */
 	SEL_POLICY,	/* allow userspace to read the in kernel policy */
 	SEL_VALIDATE_TRANS, /* compute validatetrans decision */
+	SEL_ENFORCE_START, /* compute validatetrans decision */
 	SEL_INO_NEXT,	/* The next inode number to use */
 };
 
@@ -196,7 +197,51 @@ static const struct file_operations sel_enforce_ops = {
 	.write		= sel_write_enforce,
 	.llseek		= generic_file_llseek,
 };
+int selinux_enforce_start = 0;
+static ssize_t sel_read_enforce_start(struct file *filp, char __user *buf,
+				size_t count, loff_t *ppos)
+{
+	char tmpbuf[TMPBUFLEN];
+	ssize_t length;
 
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d",
+			   selinux_enforce_start);
+	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
+}
+static ssize_t sel_write_enforce_start(struct file *file, const char __user *buf,
+				 size_t count, loff_t *ppos)
+
+{
+	char *page = NULL;
+	ssize_t length;
+	int new_value;
+
+	if (count >= PAGE_SIZE)
+		return -ENOMEM;
+
+	/* No partial writes. */
+	if (*ppos != 0)
+		return -EINVAL;
+
+	page = memdup_user_nul(buf, count);
+	if (IS_ERR(page))
+		return PTR_ERR(page);
+
+	length = -EINVAL;
+	if (sscanf(page, "%d", &new_value) != 1)
+		goto out;
+
+	selinux_enforce_start = !!new_value;
+
+out:
+	kfree(page);
+	return length;
+}
+
+static const struct file_operations sel_enforce_start_ops = {
+	.read		= sel_read_enforce_start,
+	.write		= sel_write_enforce_start,
+};
 static ssize_t sel_read_handle_unknown(struct file *filp, char __user *buf,
 					size_t count, loff_t *ppos)
 {
@@ -2010,6 +2055,8 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
 		[SEL_POLICY] = {"policy", &sel_policy_ops, S_IRUGO},
 		[SEL_VALIDATE_TRANS] = {"validatetrans", &sel_transition_ops,
 					S_IWUGO},
+		[SEL_ENFORCE_START] = {"enforce_start", &sel_enforce_start_ops,
+					S_IRUGO|S_IWUSR},
 		/* last one */ {""}
 	};
 

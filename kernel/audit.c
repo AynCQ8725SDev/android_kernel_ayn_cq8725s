@@ -529,7 +529,7 @@ static int auditd_set(struct pid *pid, u32 portid, struct net *net,
 
 	return 0;
 }
-
+#if PRINTK_INFO_EN
 /**
  * kauditd_printk_skb - Print the audit record to the ring buffer
  * @skb: audit record
@@ -545,7 +545,7 @@ static void kauditd_printk_skb(struct sk_buff *skb)
 	if (nlh->nlmsg_type != AUDIT_EOE && printk_ratelimit())
 		pr_notice("type=%d %s\n", nlh->nlmsg_type, data);
 }
-
+#endif
 /**
  * kauditd_rehold_skb - Handle a audit record send failure in the hold queue
  * @skb: audit record
@@ -578,8 +578,9 @@ static void kauditd_hold_skb(struct sk_buff *skb, int error)
 {
 	/* at this point it is uncertain if we will ever send this to auditd so
 	 * try to send the message via printk before we go any further */
+#if PRINTK_INFO_EN
 	kauditd_printk_skb(skb);
-
+#endif
 	/* can we just silently drop the message? */
 	if (!audit_default)
 		goto drop;
@@ -628,9 +629,10 @@ static void kauditd_retry_skb(struct sk_buff *skb, __always_unused int error)
 		skb_queue_tail(&audit_retry_queue, skb);
 		return;
 	}
-
+#if PRINTK_INFO_EN
 	/* we have to drop the record, send it via printk as a last effort */
 	kauditd_printk_skb(skb);
+#endif
 	audit_log_lost("kauditd retry queue overflow");
 	kfree_skb(skb);
 }

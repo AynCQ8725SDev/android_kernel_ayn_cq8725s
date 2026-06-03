@@ -827,10 +827,11 @@ static void qcom_check_ssr_status(void *data, struct rproc *rproc)
 
 static void rproc_recovery_notifier(void *data, struct rproc *rproc)
 {
+#if PRINTK_INFO_EN
 	const char *recovery = rproc->recovery_disabled ? "disabled" : "enabled";
 
 	pr_info("qcom rproc: %s: recovery %s\n", rproc->name, recovery);
-
+#endif
 	if (strnstr(rproc->name, "spss", strlen(rproc->name)))
 		return;
 

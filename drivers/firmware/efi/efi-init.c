@@ -165,7 +165,7 @@ static __init void reserve_regions(void)
 	for_each_efi_memory_desc(md) {
 		paddr = md->phys_addr;
 		npages = md->num_pages;
-
+#if PRINTK_INFO_EN
 		if (efi_enabled(EFI_DBG)) {
 			char buf[64];
 
@@ -173,7 +173,7 @@ static __init void reserve_regions(void)
 				paddr, paddr + (npages << EFI_PAGE_SHIFT) - 1,
 				efi_md_typeattr_format(buf, sizeof(buf), md));
 		}
-
+#endif
 		memrange_efi_to_native(&paddr, &npages);
 		size = npages << PAGE_SHIFT;
 

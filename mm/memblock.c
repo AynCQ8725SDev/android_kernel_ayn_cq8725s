@@ -723,11 +723,12 @@ done:
 int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
 				      int nid, enum memblock_flags flags)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] nid=%d flags=%x %pS\n", __func__,
 		     &base, &end, nid, flags, (void *)_RET_IP_);
-
+#endif
 	return memblock_add_range(&memblock.memory, base, size, nid, flags);
 }
 
@@ -744,11 +745,12 @@ int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
  */
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
-
+#endif
 	return memblock_add_range(&memblock.memory, base, size, MAX_NUMNODES, 0);
 }
 
@@ -886,11 +888,12 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 
 int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
-
+#endif
 	return memblock_remove_range(&memblock.memory, base, size);
 }
 
@@ -918,11 +921,12 @@ void __init_memblock memblock_free(void *ptr, size_t size)
  */
 int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
-
+#endif
 	kmemleak_free_part_phys(base, size);
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
@@ -932,22 +936,24 @@ EXPORT_SYMBOL_GPL(memblock_free);
 
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
-
+#endif
 	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0);
 }
 
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
 int __init_memblock memblock_physmem_add(phys_addr_t base, phys_addr_t size)
 {
+#if PRINTK_INFO_EN
 	phys_addr_t end = base + size - 1;
 
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
-
+#endif
 	return memblock_add_range(&physmem, base, size, MAX_NUMNODES, 0);
 }
 #endif
@@ -1967,7 +1973,7 @@ phys_addr_t __init_memblock memblock_get_current_limit(void)
 {
 	return memblock.current_limit;
 }
-
+#if PRINTK_INFO_EN
 static void __init_memblock memblock_dump(struct memblock_type *type)
 {
 	phys_addr_t base, end, size;
@@ -2007,11 +2013,13 @@ static void __init_memblock __memblock_dump_all(void)
 	memblock_dump(&physmem);
 #endif
 }
-
+#endif
 void __init_memblock memblock_dump_all(void)
 {
+#if PRINTK_INFO_EN
 	if (memblock_debug)
 		__memblock_dump_all();
+#endif
 }
 
 void __init memblock_allow_resize(void)

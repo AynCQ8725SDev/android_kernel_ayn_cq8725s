@@ -345,6 +345,7 @@ extern int kptr_restrict;
 #define pr_fmt(fmt) fmt
 #endif
 
+#define PRINTK_INFO_EN 0
 struct module;
 
 #ifdef CONFIG_PRINTK_INDEX
@@ -514,6 +515,7 @@ struct pi_entry {
  * This macro expands to a printk with KERN_NOTICE loglevel. It uses pr_fmt() to
  * generate the format string.
  */
+#if PRINTK_INFO_EN
 #define pr_notice(fmt, ...) \
 	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 /**
@@ -526,7 +528,10 @@ struct pi_entry {
  */
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-
+#else
+#define pr_notice(fmt, ...) do{}while(0)
+#define pr_info(fmt, ...) do{}while(0)
+#endif
 /**
  * pr_cont - Continues a previous log message in the same line.
  * @fmt: format string
@@ -611,10 +616,15 @@ struct pi_entry {
 	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
 	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+#if PRINTK_INFO_EN
 #define pr_notice_once(fmt, ...)				\
 	printk_once(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_once(fmt, ...)					\
 	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+#else
+#define pr_notice_once(fmt, ...) do{}while(0)
+#define pr_info_once(fmt, ...) do{}while(0)
+#endif
 /* no pr_cont_once, don't do that... */
 
 #if defined(DEBUG)
@@ -663,10 +673,16 @@ struct pi_entry {
 	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+#if PRINTK_INFO_EN
 #define pr_notice_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+#else
+#define pr_notice_ratelimited(fmt, ...) do{}while(0)
+#define pr_info_ratelimited(fmt, ...) do{}while(0)
+#endif
+
 /* no pr_cont_ratelimited, don't do that... */
 
 #if defined(DEBUG)

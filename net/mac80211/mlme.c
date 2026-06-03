@@ -491,7 +491,9 @@ static int ieee80211_config_bw(struct ieee80211_link_data *link,
 {
 	struct ieee80211_sub_if_data *sdata = link->sdata;
 	struct ieee80211_local *local = sdata->local;
+#if PRINTK_INFO_EN
 	struct ieee80211_if_managed *ifmgd = &sdata->u.mgd;
+#endif
 	struct ieee80211_channel *chan = link->conf->chandef.chan;
 	struct ieee80211_supported_band *sband =
 		local->hw.wiphy->bands[chan->band];

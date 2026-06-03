@@ -6969,7 +6969,9 @@ EXPORT_SYMBOL(inet_reqsk_alloc);
 static bool tcp_syn_flood_action(const struct sock *sk, const char *proto)
 {
 	struct request_sock_queue *queue = &inet_csk(sk)->icsk_accept_queue;
+#if PRINTK_INFO_EN
 	const char *msg = "Dropping request";
+#endif
 	struct net *net = sock_net(sk);
 	bool want_cookie = false;
 	u8 syncookies;
