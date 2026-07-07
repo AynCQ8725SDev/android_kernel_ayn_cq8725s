@@ -2240,9 +2240,9 @@ static ssize_t battery_parallel_cell_count_show(const struct class *c,
 }
 static CLASS_ATTR_RO(battery_parallel_cell_count);
 
-static ssize_t charging_enabled_store(struct class *c,
-				      struct class_attribute *attr,
-				      const char *buf, size_t count)
+static ssize_t charging_enabled_store(const struct class *c,
+                                      const struct class_attribute *attr,
+                                      const char *buf, size_t count)
 {
 	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
 						battery_class);
@@ -2278,8 +2278,9 @@ static ssize_t charging_enabled_store(struct class *c,
 	return count;
 }
 
-static ssize_t charging_enabled_show(struct class *c,
-				     struct class_attribute *attr, char *buf)
+static ssize_t charging_enabled_show(const struct class *c,
+                                     const struct class_attribute *attr,
+                                     char *buf)
 {
 	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
 						battery_class);
